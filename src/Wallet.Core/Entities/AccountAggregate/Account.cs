@@ -6,17 +6,15 @@ namespace Wallet.Core.Entities
 {
   public class Account : BaseEntity, IAggregateRoot
   {
-    private readonly Asset _asset;
-    private readonly int _walletIndex;
+    private readonly int _accountIndex;
     private readonly List<Address> _addresses = new List<Address>();
 
-    public Account(Asset asset, int walletIndex)
+    public Account(int accountIndex)
     {
-      _asset = asset;
-      _walletIndex = walletIndex;
+      _accountIndex = accountIndex;
     }
 
-    public Asset Asset => _asset;
+    public int AccountIndex => _accountIndex;
     public IReadOnlyList<Address> Addresses => _addresses.AsReadOnly();
 
     public void AddAddress(Address newAddress)
@@ -24,9 +22,9 @@ namespace Wallet.Core.Entities
       _addresses.Add(newAddress);
     }
 
-    public Address LastAddress()
+    public Address LastAddress(Asset asset)
     {
-      return _addresses.Last();
+      return _addresses.Where(a => a.Asset.Id == asset.Id).Last();
     }
   }
 }

@@ -1,19 +1,26 @@
+using System;
 namespace Wallet.Core.Entities
 {
   public class Address : BaseEntity
   {
-    private readonly decimal _balance;
-    private readonly int _accountIndex;
+    private readonly Asset _asset;
+    private readonly int _addressIndex;
+    private readonly string _balance;
 
-    public Address(decimal balance, int accountIndex)
+    public Address(Asset asset, int addressIndex, string balance)
     {
+      _asset = asset;
+      _addressIndex = addressIndex;
       _balance = balance;
-      _accountIndex = accountIndex;
     }
 
-    public void Send(Address recipientAddress)
+    public Asset Asset => _asset;
+    public int AddressIndex => _addressIndex;
+    public string Balance => _balance;
+
+    public bool HasBalance()
     {
-      // Send to recipient
+      return Convert.ToDecimal(_balance) > 0;
     }
   }
 }
