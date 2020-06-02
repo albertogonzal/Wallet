@@ -5,6 +5,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="NBitcoin" Version="5.0.40" />
     <PackageReference Include="Nethereum" Version="0.0.2.60" />
     <PackageReference Include="Nethereum.HdWallet" Version="3.7.1" />
