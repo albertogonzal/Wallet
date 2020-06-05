@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Wallet.Core.Entities;
 
 namespace Wallet.Infrastructure.Data
 {
@@ -6,5 +7,6 @@ namespace Wallet.Infrastructure.Data
   {
     public WalletDbContext(DbContextOptions<WalletDbContext> options) : base(options) { }
 
+    public DbSet<Account> Accounts { get; set; }
   }
 }

@@ -11,7 +11,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Wallet.Core.Interfaces;
 using Wallet.Infrastructure.Data;
+using Wallet.Infrastructure.Services;
 
 namespace Wallet.Web
 {
@@ -27,6 +29,9 @@ namespace Wallet.Web
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddDbContext<WalletDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("WalletDb")));
+
+      services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
+      services.AddScoped<IAccountService, NethereumAccountService>();
       services.AddControllers();
     }
 
