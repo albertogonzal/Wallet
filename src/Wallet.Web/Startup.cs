@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Wallet.Core.Interfaces;
 using Wallet.Infrastructure.Data;
+using Wallet.Infrastructure.Identity;
 using Wallet.Infrastructure.Services;
 
 namespace Wallet.Web
@@ -29,6 +31,8 @@ namespace Wallet.Web
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddDbContext<WalletDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("WalletDb")));
+      services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("IdentityDb")));
+      services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityDbContext>();
 
       services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
       services.AddScoped<IAccountService, NethereumAccountService>();
@@ -43,6 +47,7 @@ namespace Wallet.Web
       }
       app.UseHttpsRedirection();
       app.UseRouting();
+      app.UseAuthentication();
       app.UseAuthorization();
       app.UseEndpoints(endpoints =>
       {

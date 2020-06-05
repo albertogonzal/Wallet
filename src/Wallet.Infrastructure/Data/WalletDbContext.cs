@@ -8,5 +8,10 @@ namespace Wallet.Infrastructure.Data
     public WalletDbContext(DbContextOptions<WalletDbContext> options) : base(options) { }
 
     public DbSet<Account> Accounts { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+      base.OnModelCreating(builder);
+    }
   }
 }
