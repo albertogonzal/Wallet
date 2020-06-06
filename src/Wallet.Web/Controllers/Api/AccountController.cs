@@ -18,7 +18,7 @@ namespace Wallet.Web.Controllers
     [HttpPost]
     public async Task<object> NewAddress()
     {
-      Asset coin = new Asset();
+      Asset coin = new Asset("Eth");
 
       return await _accountService.NewAddress(coin);
     }

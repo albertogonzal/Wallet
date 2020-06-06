@@ -3,24 +3,22 @@ namespace Wallet.Core.Entities
 {
   public class Address : BaseEntity
   {
-    private readonly Asset _asset;
-    private readonly int _addressIndex;
-    private readonly string _balance;
-
-    public Address(Asset asset, int addressIndex, string balance)
+    public Address(Guid accountId, Guid assetId, int addressIndex, string balance)
     {
-      _asset = asset;
-      _addressIndex = addressIndex;
-      _balance = balance;
+      AccountId = accountId;
+      AssetId = assetId;
+      AddressIndex = addressIndex;
+      Balance = balance;
     }
 
-    public Asset Asset => _asset;
-    public int AddressIndex => _addressIndex;
-    public string Balance => _balance;
+    public Guid AccountId { get; private set; }
+    public Guid AssetId { get; private set; }
+    public int AddressIndex { get; private set; }
+    public string Balance { get; private set; }
 
     public bool HasBalance()
     {
-      return Convert.ToDecimal(_balance) > 0;
+      return Convert.ToDecimal(Balance) > 0;
     }
   }
 }

@@ -48,7 +48,7 @@ namespace Wallet.Infrastructure.Services
       // Eth format private key
       var privateKey = ethEcKey.GetPrivateKeyAsBytes().ToHex();
 
-      var newAddress = new Address(asset, addressIndex, "0");
+      var newAddress = new Address(Guid.NewGuid(), Guid.NewGuid(), addressIndex, "0");
       account.AddAddress(newAddress);
 
       // Update repository
