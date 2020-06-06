@@ -33,6 +33,14 @@ namespace Wallet.Web
       services.AddDbContext<WalletDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("WalletDb")));
       services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("IdentityDb")));
       services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityDbContext>();
+      services.Configure<IdentityOptions>(options =>
+      {
+        options.Password.RequiredLength = 4;
+        options.Password.RequiredUniqueChars = 0;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+      });
 
       services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
       services.AddScoped<IAccountService, NethereumAccountService>();
