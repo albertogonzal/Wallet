@@ -12,6 +12,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Wallet.Core;
+using Wallet.Core.Entities;
 using Wallet.Core.Interfaces;
 using Wallet.Infrastructure.Data;
 using Wallet.Infrastructure.Identity;
@@ -44,6 +46,7 @@ namespace Wallet.Web
 
       services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
       services.AddScoped<IAccountService, NethereumAccountService>();
+      services.Configure<WalletOptions>(Configuration.GetSection("WalletOptions"));
       services.AddControllers();
     }
 

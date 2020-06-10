@@ -1,3 +1,4 @@
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -44,6 +45,16 @@ namespace Wallet.Infrastructure.Data
     {
       _dbContext.Set<T>().Remove(entity);
       await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<T> FirstOrDefaultAsync(ISpecification<T> spec)
+    {
+      return await ApplySpecification(spec).FirstOrDefaultAsync();
+    }
+
+    private IQueryable<T> ApplySpecification(ISpecification<T> spec)
+    {
+      return SpecificationEvaluator<T>.GetQuery(_dbContext.Set<T>().AsQueryable(), spec);
     }
   }
 }

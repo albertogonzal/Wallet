@@ -11,31 +11,32 @@ using Wallet.Core.Interfaces;
 using System.Threading.Tasks;
 using Wallet.Core.Entities;
 using Nethereum.Signer;
+using Wallet.Core.Specifications;
+using Microsoft.Extensions.Options;
+using Wallet.Core;
 
 namespace Wallet.Infrastructure.Services
 {
   public class NethereumAccountService : IAccountService
   {
-    private readonly string _seed = "16236c2028fd2018eb7049825e6b4f0191de4dbff003579918de7b7348ff06ac";
     private readonly IAsyncRepository<Core.Entities.Account> _repository;
+    private readonly IOptions<WalletOptions> _options;
 
-    public NethereumAccountService(IAsyncRepository<Core.Entities.Account> repository)
+    public NethereumAccountService(IAsyncRepository<Core.Entities.Account> repository, IOptions<WalletOptions> options)
     {
       _repository = repository;
+      _options = options;
     }
 
     public async Task<Address> NewAddress(Guid accountId, Guid assetId)
     {
-      // Guid accountId = new Guid("61c676f4-11ff-4998-be0f-57561ebe8a57");
-      // Guid assetId = new Guid("8d57d4eb-314c-4c52-bc4e-88a5631aca35");
-      // Guid userId = new Guid("2c241706-e00d-4d7f-bc18-ad4df5a5b2ec");
-
-      var account = await _repository.GetByIdAsync(accountId);
+      var accountSpec = new AccountWithAddressesSpecification(accountId);
+      var account = await _repository.FirstOrDefaultAsync(accountSpec);
 
       int accountIndex = account.AccountIndex;
       int addressIndex = account.Addresses.Where(a => a.AssetId == assetId).Count();
 
-      var masterKey = new ExtKey(_seed);
+      var masterKey = new ExtKey(_options.Value.Seed);
 
       string keyPathString = $"m/44'/60'/{accountIndex}'/0/{addressIndex}";
       var keyPath = new NBitcoin.KeyPath(keyPathString);
@@ -43,9 +44,9 @@ namespace Wallet.Infrastructure.Services
       var privateKey = masterKey.Derive(keyPath).PrivateKey.ToBytes();
 
       var ethEcKey = new EthECKey(privateKey, true);
-      var ethPrivateKey = ethEcKey.GetPrivateKeyAsBytes().ToHex();
+      string publicAddress = ethEcKey.GetPublicAddress();
 
-      var newAddress = new Address(accountId, assetId, addressIndex);
+      var newAddress = new Address(accountId, assetId, addressIndex, publicAddress);
       account.AddAddress(newAddress);
 
       await _repository.UpdateAsync(account);
