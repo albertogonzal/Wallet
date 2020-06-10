@@ -9,11 +9,13 @@ namespace Wallet.Core.Entities
   {
     private readonly List<Address> _addresses = new List<Address>();
 
-    public Account(int accountIndex)
+    public Account(Guid userId, int accountIndex)
     {
+      UserId = userId;
       AccountIndex = accountIndex;
     }
 
+    public Guid UserId { get; private set; }
     public int AccountIndex { get; private set; }
     public IReadOnlyList<Address> Addresses => _addresses.AsReadOnly();
 

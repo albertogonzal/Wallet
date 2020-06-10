@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 using NBitcoin;
 using Nethereum.Web3;
@@ -23,35 +24,31 @@ namespace Wallet.Infrastructure.Services
       _repository = repository;
     }
 
-    public async Task<Address> NewAddress(Core.Entities.Asset asset)
+    public async Task<Address> NewAddress(Guid accountId, Guid assetId)
     {
-      // remove userId param, use Identity
-      // Get Account from repository
-      var account = await _repository.GetByIdAsync(new Guid());
-      int accountIndex = 45;
-      int addressIndex = 12;
+      // Guid accountId = new Guid("61c676f4-11ff-4998-be0f-57561ebe8a57");
+      // Guid assetId = new Guid("8d57d4eb-314c-4c52-bc4e-88a5631aca35");
+      // Guid userId = new Guid("2c241706-e00d-4d7f-bc18-ad4df5a5b2ec");
 
-      // m / purpose' / coin_type' / account' / chain / address_index
+      var account = await _repository.GetByIdAsync(accountId);
+
+      int accountIndex = account.AccountIndex;
+      int addressIndex = account.Addresses.Where(a => a.AssetId == assetId).Count();
+
       var masterKey = new ExtKey(_seed);
+
       string keyPathString = $"m/44'/60'/{accountIndex}'/0/{addressIndex}";
       var keyPath = new NBitcoin.KeyPath(keyPathString);
 
-      // get masterPubKey
-      var masterPubKey = masterKey.Derive(keyPath).Neuter();
+      var privateKey = masterKey.Derive(keyPath).PrivateKey.ToBytes();
 
-      // get privatekey
-      var privateKey0 = masterKey.Derive(keyPath).PrivateKey.ToBytes();
+      var ethEcKey = new EthECKey(privateKey, true);
+      var ethPrivateKey = ethEcKey.GetPrivateKeyAsBytes().ToHex();
 
-      // Get ethereum EC Key
-      var ethEcKey = new EthECKey(privateKey0, true);
-
-      // Eth format private key
-      var privateKey = ethEcKey.GetPrivateKeyAsBytes().ToHex();
-
-      var newAddress = new Address(Guid.NewGuid(), Guid.NewGuid(), addressIndex, "0");
+      var newAddress = new Address(accountId, assetId, addressIndex);
       account.AddAddress(newAddress);
 
-      // Update repository
+      await _repository.UpdateAsync(account);
 
       return newAddress;
     }
