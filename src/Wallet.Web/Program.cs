@@ -8,6 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Wallet.Core.Entities;
+using Wallet.Core.Interfaces;
+using Wallet.Infrastructure.Data;
 using Wallet.Infrastructure.Identity;
 
 namespace Wallet.Web
@@ -25,6 +28,12 @@ namespace Wallet.Web
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         await AppIdentityDbContextSeed.SeedAsync(userManager, roleManager);
+
+        var walletDbContext = services.GetRequiredService<WalletDbContext>();
+        var accountRepository = services.GetRequiredService<IAsyncRepository<Account>>();
+        var assetRepository = services.GetRequiredService<IAsyncRepository<Asset>>();
+        var service = services.GetRequiredService<IAccountService>();
+        await WalletDbContextSeed.SeedAsync(accountRepository, assetRepository, service, userManager);
       }
 
       host.Run();

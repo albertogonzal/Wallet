@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -43,6 +45,20 @@ namespace Wallet.Web
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireUppercase = false;
       });
+      services.AddHangfire(configuration => configuration
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(Configuration.GetConnectionString("HangfireDb"), new SqlServerStorageOptions
+        {
+          CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+          SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+          QueuePollInterval = TimeSpan.Zero,
+          UseRecommendedIsolationLevel = true,
+          UsePageLocksOnDequeue = true,
+          DisableGlobalLocks = true
+        }));
+      services.AddHangfireServer();
 
       services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
       services.AddScoped<IAccountService, NethereumAccountService>();
@@ -50,7 +66,7 @@ namespace Wallet.Web
       services.AddControllers();
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IBackgroundJobClient backgroundJobs)
     {
       if (env.IsDevelopment())
       {
@@ -60,6 +76,10 @@ namespace Wallet.Web
       app.UseRouting();
       app.UseAuthentication();
       app.UseAuthorization();
+
+      app.UseHangfireDashboard();
+      backgroundJobs.Enqueue<IAccountService>(x => x.Test());
+
       app.UseEndpoints(endpoints =>
       {
         endpoints.MapControllers();

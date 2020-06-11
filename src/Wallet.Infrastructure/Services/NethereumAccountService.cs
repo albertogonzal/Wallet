@@ -28,6 +28,18 @@ namespace Wallet.Infrastructure.Services
       _options = options;
     }
 
+    public async Task NewAccount(Guid userId)
+    {
+      var accounts = await _repository.ListAsync();
+      if (accounts.Where(a => a.UserId == userId) == null)
+      {
+        int accountIndex = accounts.Count;
+        var account = new Core.Entities.Account(userId, accountIndex);
+
+        await _repository.AddAsync(account);
+      }
+    }
+
     public async Task<Address> NewAddress(Guid accountId, Guid assetId)
     {
       var accountSpec = new AccountWithAddressesSpecification(accountId);
@@ -36,14 +48,7 @@ namespace Wallet.Infrastructure.Services
       int accountIndex = account.AccountIndex;
       int addressIndex = account.Addresses.Where(a => a.AssetId == assetId).Count();
 
-      var masterKey = new ExtKey(_options.Value.Seed);
-
-      string keyPathString = $"m/44'/60'/{accountIndex}'/0/{addressIndex}";
-      var keyPath = new NBitcoin.KeyPath(keyPathString);
-
-      var privateKey = masterKey.Derive(keyPath).PrivateKey.ToBytes();
-
-      var ethEcKey = new EthECKey(privateKey, true);
+      var ethEcKey = GetEthECKey(accountIndex, addressIndex);
       string publicAddress = ethEcKey.GetPublicAddress();
 
       var newAddress = new Address(accountId, assetId, addressIndex, publicAddress);
@@ -52,6 +57,24 @@ namespace Wallet.Infrastructure.Services
       await _repository.UpdateAsync(account);
 
       return newAddress;
+    }
+
+    private EthECKey GetEthECKey(int accountIndex, int addressIndex)
+    {
+      var masterKey = new ExtKey(_options.Value.Seed);
+
+      string keyPathString = $"m/44'/60'/{accountIndex}'/0/{addressIndex}";
+      var keyPath = new NBitcoin.KeyPath(keyPathString);
+
+      var privateKey = masterKey.Derive(keyPath).PrivateKey.ToBytes();
+      var ethEcKey = new EthECKey(privateKey, true);
+
+      return ethEcKey;
+    }
+
+    public void Test()
+    {
+      Console.WriteLine("Test");
     }
   }
 }

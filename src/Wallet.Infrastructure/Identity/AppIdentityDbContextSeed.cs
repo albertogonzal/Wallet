@@ -10,15 +10,15 @@ namespace Wallet.Infrastructure.Identity
     {
       await roleManager.CreateAsync(new IdentityRole("admin"));
 
-      var user = new ApplicationUser { UserName = "user@wallet.com", Email = "user@wallet.com" };
-      await userManager.CreateAsync(user, "PAssword12!@");
-
       string adminUserName = "admin@wallet.com";
       var admin = new ApplicationUser { UserName = adminUserName, Email = adminUserName };
       await userManager.CreateAsync(admin, "PAssword12!@");
 
       admin = await userManager.FindByNameAsync(adminUserName);
       await userManager.AddToRoleAsync(admin, "admin");
+
+      var user = new ApplicationUser { UserName = "user@wallet.com", Email = "user@wallet.com" };
+      await userManager.CreateAsync(user, "PAssword12!@");
     }
   }
 }
