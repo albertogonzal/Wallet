@@ -14,15 +14,16 @@ using Nethereum.Signer;
 using Wallet.Core.Specifications;
 using Microsoft.Extensions.Options;
 using Wallet.Core;
+using Wallet.Infrastructure.Helpers;
 
 namespace Wallet.Infrastructure.Services
 {
-  public class NethereumAccountService : IAccountService
+  public class AccountService : IAccountService
   {
     private readonly IAsyncRepository<Core.Entities.Account> _repository;
     private readonly IOptions<WalletOptions> _options;
 
-    public NethereumAccountService(IAsyncRepository<Core.Entities.Account> repository, IOptions<WalletOptions> options)
+    public AccountService(IAsyncRepository<Core.Entities.Account> repository, IOptions<WalletOptions> options)
     {
       _repository = repository;
       _options = options;
@@ -48,7 +49,7 @@ namespace Wallet.Infrastructure.Services
       int accountIndex = account.AccountIndex;
       int addressIndex = account.Addresses.Where(a => a.AssetId == assetId).Count();
 
-      var ethEcKey = GetEthECKey(accountIndex, addressIndex);
+      var ethEcKey = EthereumHelper.GetEthECKey(accountIndex, addressIndex, _options.Value.Seed);
       string publicAddress = ethEcKey.GetPublicAddress();
 
       var newAddress = new Address(accountId, assetId, addressIndex, publicAddress);
@@ -57,19 +58,6 @@ namespace Wallet.Infrastructure.Services
       await _repository.UpdateAsync(account);
 
       return newAddress;
-    }
-
-    private EthECKey GetEthECKey(int accountIndex, int addressIndex)
-    {
-      var masterKey = new ExtKey(_options.Value.Seed);
-
-      string keyPathString = $"m/44'/60'/{accountIndex}'/0/{addressIndex}";
-      var keyPath = new NBitcoin.KeyPath(keyPathString);
-
-      var privateKey = masterKey.Derive(keyPath).PrivateKey.ToBytes();
-      var ethEcKey = new EthECKey(privateKey, true);
-
-      return ethEcKey;
     }
   }
 }

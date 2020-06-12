@@ -61,7 +61,7 @@ namespace Wallet.Web
       services.AddHangfireServer();
 
       services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
-      services.AddScoped<IAccountService, NethereumAccountService>();
+      services.AddScoped<IAccountService, AccountService>();
       services.AddScoped<IEthereumService, Web3Service>();
       services.Configure<WalletOptions>(Configuration.GetSection("WalletOptions"));
       services.AddControllers();
