@@ -62,6 +62,7 @@ namespace Wallet.Web
 
       services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
       services.AddScoped<IAccountService, NethereumAccountService>();
+      services.AddScoped<IEthereumService, Web3Service>();
       services.Configure<WalletOptions>(Configuration.GetSection("WalletOptions"));
       services.AddControllers();
     }
@@ -78,7 +79,7 @@ namespace Wallet.Web
       app.UseAuthorization();
 
       app.UseHangfireDashboard();
-      backgroundJobs.Enqueue<IAccountService>(x => x.Test());
+      backgroundJobs.Enqueue(() => Console.WriteLine("Test from hangfire"));
 
       app.UseEndpoints(endpoints =>
       {

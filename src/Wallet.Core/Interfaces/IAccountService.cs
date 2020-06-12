@@ -8,6 +8,5 @@ namespace Wallet.Core.Interfaces
   {
     Task NewAccount(Guid userId);
     Task<Address> NewAddress(Guid accountId, Guid assetId);
-    void Test();
   }
 }

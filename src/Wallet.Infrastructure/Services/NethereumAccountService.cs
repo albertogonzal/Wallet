@@ -71,10 +71,5 @@ namespace Wallet.Infrastructure.Services
 
       return ethEcKey;
     }
-
-    public void Test()
-    {
-      Console.WriteLine("Test");
-    }
   }
 }
