@@ -1,3 +1,4 @@
+using System.Reflection.Emit;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,11 +25,14 @@ namespace Wallet.Infrastructure.Services
       _options = options;
     }
 
-    public async Task Transfer()
+    public async Task<List<string>> Transfer()
     {
-      Dictionary<int, List<int>> addresses = new Dictionary<int, List<int>>();
+      List<string> txHashes = new List<string>();
+      Dictionary<int, List<(int, string)>> addresses = new Dictionary<int, List<(int, string)>>();
       var spec = new AccountWithAddressesSpecification();
-      var accounts = await _repository.ListAsync(spec);
+      var allAccounts = await _repository.ListAsync(spec);
+      var accounts = allAccounts.Where(a => a.AccountIndex != 0).ToList();
+      var adminAddress = allAccounts.Where(a => a.AccountIndex == 0).First().Addresses.First().PublicAddress;
 
       foreach (var account in accounts)
       {
@@ -38,14 +42,20 @@ namespace Wallet.Infrastructure.Services
           if (balance != "0")
           {
             int accountIndex = account.AccountIndex;
+            int addressIndex = address.AddressIndex;
             if (!addresses.ContainsKey(accountIndex))
             {
-              addresses.Add(accountIndex, new List<int>());
+              addresses.Add(accountIndex, new List<(int AddressIndex, string Balance)>());
             }
-            addresses[accountIndex].Add(address.AddressIndex);
+            addresses[accountIndex].Add((addressIndex, balance));
+
+            string txHash = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balance);
+            txHashes.Add(txHash);
           }
         }
       }
+
+      return txHashes;
     }
   }
 }

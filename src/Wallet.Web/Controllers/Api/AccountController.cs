@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Wallet.Core.Entities;
 using Wallet.Core.Interfaces;
+using System.Collections.Generic;
 
 namespace Wallet.Web.Controllers
 {
@@ -34,9 +35,9 @@ namespace Wallet.Web.Controllers
     }
 
     [HttpPost]
-    public async Task Test()
+    public async Task<List<string>> Test()
     {
-      await _backgroundService.Transfer();
+      return await _backgroundService.Transfer();
     }
   }
 }
