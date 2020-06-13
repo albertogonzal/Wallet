@@ -34,6 +34,7 @@ namespace Wallet.Web
 
     public void ConfigureServices(IServiceCollection services)
     {
+      services.Configure<WalletOptions>(Configuration.GetSection("WalletOptions"));
       services.AddDbContext<WalletDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("WalletDb")));
       services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("IdentityDb")));
       services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityDbContext>();
@@ -63,7 +64,7 @@ namespace Wallet.Web
       services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
       services.AddScoped<IAccountService, AccountService>();
       services.AddScoped<IEthereumService, Web3Service>();
-      services.Configure<WalletOptions>(Configuration.GetSection("WalletOptions"));
+      services.AddScoped<IBackgroundService, HangfireService>();
       services.AddControllers();
     }
 

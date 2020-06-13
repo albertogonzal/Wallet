@@ -23,7 +23,7 @@ namespace Wallet.Infrastructure.Services
       _options = options;
       _accountService = accountService;
 
-      //   _web3 = Web3Client();
+      _web3 = Web3Client();
     }
 
     public async Task<string> GetBalanceAsync(string address)

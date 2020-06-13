@@ -11,10 +11,13 @@ namespace Wallet.Web.Controllers
   {
     private readonly IAccountService _accountService;
     private readonly IEthereumService _ethService;
-    public AccountController(IAccountService accountService, IEthereumService ethService)
+    private readonly IBackgroundService _backgroundService;
+
+    public AccountController(IAccountService accountService, IEthereumService ethService, IBackgroundService backgroundService)
     {
       _accountService = accountService;
       _ethService = ethService;
+      _backgroundService = backgroundService;
     }
 
     [HttpPost]
@@ -28,6 +31,12 @@ namespace Wallet.Web.Controllers
     public async Task<string> Balance(string address)
     {
       return await _ethService.GetBalanceAsync(address);
+    }
+
+    [HttpPost]
+    public async Task Test()
+    {
+      await _backgroundService.Transfer();
     }
   }
 }

@@ -27,6 +27,11 @@ namespace Wallet.Infrastructure.Data
       return await _dbContext.Set<T>().ToListAsync();
     }
 
+    public async Task<List<T>> ListAsync(ISpecification<T> spec)
+    {
+      return await ApplySpecification(spec).ToListAsync();
+    }
+
     public async Task<T> AddAsync(T entity)
     {
       await _dbContext.Set<T>().AddAsync(entity);
