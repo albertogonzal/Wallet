@@ -80,7 +80,7 @@ namespace Wallet.Web
       app.UseAuthorization();
 
       app.UseHangfireDashboard();
-      backgroundJobs.Enqueue(() => Console.WriteLine("Test from hangfire"));
+      RecurringJob.AddOrUpdate<IBackgroundService>(service => service.Transfer(), () => "0 * * ? * *");
 
       app.UseEndpoints(endpoints =>
       {

@@ -35,7 +35,7 @@ namespace Wallet.Web.Controllers
     }
 
     [HttpPost]
-    public async Task<List<string>> Test()
+    public async Task<List<string>> Transfer()
     {
       return await _backgroundService.Transfer();
     }

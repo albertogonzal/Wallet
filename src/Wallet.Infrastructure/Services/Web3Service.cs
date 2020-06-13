@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Numerics;
 using System;
 using System.Net.Http;
@@ -33,20 +34,29 @@ namespace Wallet.Infrastructure.Services
 
     public async Task<string> CreateTransactionAsync(int accountIndex, int addressIndex, string recipient, string amount)
     {
-      Web3 txWeb3 = Web3Client(accountIndex, addressIndex);
-      var balanceInEther = Web3.Convert.FromWei(BigInteger.Parse(amount));
-
-      var gasPrice = Web3.Convert.ToWei(25, UnitConversion.EthUnit.Gwei);
-      var fee = new BigInteger(21000) * gasPrice;
-
-      var balanceInEtherMinusFee = balanceInEther - Web3.Convert.FromWei(fee);
-      if (balanceInEtherMinusFee < 0)
+      try
       {
-        return $"{txWeb3.Eth.Accounts.ToString()} {accountIndex} {addressIndex}";
-      }
 
-      var txReceipt = await txWeb3.Eth.GetEtherTransferService().TransferEtherAndWaitForReceiptAsync(recipient, balanceInEtherMinusFee);
-      return txReceipt.TransactionHash;
+        Web3 txWeb3 = Web3Client(accountIndex, addressIndex);
+
+        decimal balanceWei = decimal.Parse(amount);
+        decimal gasPriceGwei = 25m;
+        BigInteger gas = new BigInteger(21000);
+
+        BigInteger gasPriceWei = Web3.Convert.ToWei(gasPriceGwei, UnitConversion.EthUnit.Gwei);
+        BigInteger feeWei = gasPriceWei * gas;
+        decimal balanceEth = Web3.Convert.FromWei(new BigInteger(balanceWei));
+        decimal feeEth = Web3.Convert.FromWei(feeWei);
+        decimal amountToSendEth = balanceEth - feeEth;
+
+        var txReceipt = await txWeb3.Eth.GetEtherTransferService().TransferEtherAndWaitForReceiptAsync(recipient, amountToSendEth, gasPriceGwei, gas);
+        return txReceipt.TransactionHash;
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"accountIndex: {accountIndex}, addressIndex: {addressIndex}, {ex.ToString()}");
+        return $"accountIndex: {accountIndex}, addressIndex: {addressIndex}, {ex.ToString()}";
+      }
     }
 
     private Web3 Web3Client(int accountIndex, int addressIndex)
