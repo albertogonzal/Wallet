@@ -31,9 +31,8 @@ namespace Wallet.Web
 
         var walletDbContext = services.GetRequiredService<WalletDbContext>();
         var accountRepository = services.GetRequiredService<IAsyncRepository<Account>>();
-        var assetRepository = services.GetRequiredService<IAsyncRepository<Asset>>();
         var service = services.GetRequiredService<IAccountService>();
-        await WalletDbContextSeed.SeedAsync(accountRepository, assetRepository, service, userManager);
+        await WalletDbContextSeed.SeedAsync(accountRepository, service, userManager);
       }
 
       host.Run();

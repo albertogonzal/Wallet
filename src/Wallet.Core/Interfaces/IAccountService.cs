@@ -7,6 +7,6 @@ namespace Wallet.Core.Interfaces
   public interface IAccountService
   {
     Task NewAccount(Guid userId);
-    Task<Address> NewAddress(Guid accountId, Guid assetId);
+    Task<Address> NewAddress(Guid accountId);
   }
 }

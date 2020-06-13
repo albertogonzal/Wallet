@@ -41,18 +41,18 @@ namespace Wallet.Infrastructure.Services
       }
     }
 
-    public async Task<Address> NewAddress(Guid accountId, Guid assetId)
+    public async Task<Address> NewAddress(Guid accountId)
     {
       var accountSpec = new AccountWithAddressesSpecification(accountId);
       var account = await _repository.FirstOrDefaultAsync(accountSpec);
 
       int accountIndex = account.AccountIndex;
-      int addressIndex = account.Addresses.Where(a => a.AssetId == assetId).Count();
+      int addressIndex = account.Addresses.Count();
 
       var ethEcKey = EthereumHelper.GetEthECKey(accountIndex, addressIndex, _options.Value.Seed);
       string publicAddress = ethEcKey.GetPublicAddress();
 
-      var newAddress = new Address(accountId, assetId, addressIndex, publicAddress);
+      var newAddress = new Address(accountId, addressIndex, publicAddress);
       account.AddAddress(newAddress);
 
       await _repository.UpdateAsync(account);

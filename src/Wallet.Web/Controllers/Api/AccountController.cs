@@ -22,10 +22,10 @@ namespace Wallet.Web.Controllers
     }
 
     [HttpPost]
-    public async Task<Address> NewAddress(Guid accountId, Guid assetId)
+    public async Task<Address> NewAddress(Guid accountId)
     {
       // Validate request userId
-      return await _accountService.NewAddress(accountId, assetId);
+      return await _accountService.NewAddress(accountId);
     }
 
     [HttpPost]

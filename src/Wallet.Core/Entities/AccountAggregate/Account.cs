@@ -24,9 +24,9 @@ namespace Wallet.Core.Entities
       _addresses.Add(newAddress);
     }
 
-    public Address LastAddress(Guid assetId)
+    public Address LastAddress()
     {
-      return _addresses.Where(a => a.AssetId == assetId).Last();
+      return _addresses.Last();
     }
   }
 }
