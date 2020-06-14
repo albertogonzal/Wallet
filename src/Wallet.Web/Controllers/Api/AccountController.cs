@@ -24,12 +24,11 @@ namespace Wallet.Web.Controllers
     [HttpPost]
     public async Task<Address> NewAddress(Guid accountId)
     {
-      // Validate request userId
       return await _accountService.NewAddress(accountId);
     }
 
     [HttpPost]
-    public async Task<string> Balance(string address)
+    public async Task<decimal> Balance(string address)
     {
       return await _ethService.GetBalanceAsync(address);
     }

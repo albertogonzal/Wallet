@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Numerics;
 using System;
@@ -29,28 +30,28 @@ namespace Wallet.Infrastructure.Services
       _web3 = Web3Client(0, 0);
     }
 
-    public async Task<string> GetBalanceAsync(string address)
+    public async Task<decimal> GetBalanceAsync(string address)
     {
-      var balance = await _web3.Eth.GetBalance.SendRequestAsync(address);
-      return balance.Value.ToString();
+      var balanceWei = await _web3.Eth.GetBalance.SendRequestAsync(address);
+      return Web3.Convert.FromWei(balanceWei);
     }
 
-    public async Task<string> CreateTransactionAsync(int accountIndex, int addressIndex, string recipient, string amount)
+    public async Task<string> CreateTransactionAsync(int accountIndex, int addressIndex, string recipient, decimal amountEth)
     {
       try
       {
 
         Web3 txWeb3 = Web3Client(accountIndex, addressIndex);
 
-        decimal balanceWei = decimal.Parse(amount);
-        decimal gasPriceGwei = 25m;
-        BigInteger gas = new BigInteger(21000);
+        // decimal balanceWei = Web3.Convert.ToWei(amountEth);
+        decimal gasPriceGwei = _txOptions.Value.GasPrice;
+        BigInteger gas = _txOptions.Value.Gas;
 
         BigInteger gasPriceWei = Web3.Convert.ToWei(gasPriceGwei, UnitConversion.EthUnit.Gwei);
         BigInteger feeWei = gasPriceWei * gas;
-        decimal balanceEth = Web3.Convert.FromWei(new BigInteger(balanceWei));
+        // decimal balanceEth = Web3.Convert.FromWei(new BigInteger(balanceWei));
         decimal feeEth = Web3.Convert.FromWei(feeWei);
-        decimal amountToSendEth = balanceEth - feeEth;
+        decimal amountToSendEth = amountEth - feeEth;
 
         var txReceipt = await txWeb3.Eth.GetEtherTransferService().TransferEtherAndWaitForReceiptAsync(recipient, amountToSendEth, gasPriceGwei, gas);
         return txReceipt.TransactionHash;

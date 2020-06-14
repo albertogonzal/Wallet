@@ -1,5 +1,8 @@
+using System.Numerics;
 using NBitcoin;
+using Nethereum.Hex.HexTypes;
 using Nethereum.Signer;
+using Nethereum.Web3;
 
 namespace Wallet.Infrastructure.Helpers
 {

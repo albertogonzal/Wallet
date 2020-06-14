@@ -5,13 +5,13 @@ namespace Wallet.Core.Entities
 {
   public class Balance : BaseEntity, IAggregateRoot
   {
-    public Balance(Guid userId, string amount)
+    public Balance(Guid userId, decimal amount)
     {
       UserId = userId;
       Amount = amount;
     }
 
     public Guid UserId { get; }
-    public string Amount { get; }
+    public decimal Amount { get; }
   }
 }

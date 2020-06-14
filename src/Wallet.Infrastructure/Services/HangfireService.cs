@@ -29,7 +29,7 @@ namespace Wallet.Infrastructure.Services
     public async Task<List<string>> Transfer()
     {
       List<string> txHashes = new List<string>();
-      Dictionary<int, List<(int, string)>> addresses = new Dictionary<int, List<(int, string)>>();
+      Dictionary<int, List<(int, decimal)>> addresses = new Dictionary<int, List<(int, decimal)>>();
       var spec = new AccountWithAddressesSpecification();
       var allAccounts = await _repository.ListAsync(spec);
       var accounts = allAccounts.Where(a => a.AccountIndex != 0).ToList();
@@ -39,18 +39,18 @@ namespace Wallet.Infrastructure.Services
       {
         foreach (var address in account.Addresses)
         {
-          string balance = await _ethService.GetBalanceAsync(address.PublicAddress);
-          if (balance < _txOptions.Value.MinimumDeposit)
+          decimal balanceEth = await _ethService.GetBalanceAsync(address.PublicAddress);
+          if (balanceEth < _txOptions.Value.MinimumDeposit)
           {
             int accountIndex = account.AccountIndex;
             int addressIndex = address.AddressIndex;
             if (!addresses.ContainsKey(accountIndex))
             {
-              addresses.Add(accountIndex, new List<(int AddressIndex, string Balance)>());
+              addresses.Add(accountIndex, new List<(int AddressIndex, decimal Balance)>());
             }
-            addresses[accountIndex].Add((addressIndex, balance));
+            addresses[accountIndex].Add((addressIndex, balanceEth));
 
-            string txHash = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balance);
+            string txHash = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balanceEth);
             txHashes.Add(txHash);
           }
         }
