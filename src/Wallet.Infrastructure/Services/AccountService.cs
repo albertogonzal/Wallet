@@ -13,7 +13,7 @@ using Wallet.Core.Entities;
 using Nethereum.Signer;
 using Wallet.Core.Specifications;
 using Microsoft.Extensions.Options;
-using Wallet.Core;
+using Wallet.Core.Options;
 using Wallet.Infrastructure.Helpers;
 
 namespace Wallet.Infrastructure.Services

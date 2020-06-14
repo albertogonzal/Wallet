@@ -9,7 +9,7 @@ using Nethereum.JsonRpc.Client;
 using Nethereum.Signer;
 using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
-using Wallet.Core;
+using Wallet.Core.Options;
 using Wallet.Core.Interfaces;
 using Wallet.Infrastructure.Helpers;
 using Nethereum.Util;
@@ -20,9 +20,12 @@ namespace Wallet.Infrastructure.Services
   {
     private readonly Web3 _web3;
     private readonly IOptions<WalletOptions> _options;
-    public Web3Service(IOptions<WalletOptions> options)
+    private readonly IOptions<Core.Options.TransactionOptions> _txOptions;
+
+    public Web3Service(IOptions<WalletOptions> options, IOptions<Core.Options.TransactionOptions> txOptions)
     {
       _options = options;
+      _txOptions = txOptions;
       _web3 = Web3Client(0, 0);
     }
 

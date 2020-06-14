@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Wallet.Core;
+using Wallet.Core.Options;
 using Wallet.Core.Entities;
 using Wallet.Core.Interfaces;
 using Wallet.Core.Specifications;
@@ -15,13 +15,15 @@ namespace Wallet.Infrastructure.Services
     private readonly IEthereumService _ethService;
     private readonly IAsyncRepository<Account> _repository;
     private readonly IOptions<WalletOptions> _options;
+    private readonly IOptions<TransactionOptions> _txOptions;
 
-    public HangfireService(IAccountService accountService, IEthereumService ethService, IAsyncRepository<Account> repository, IOptions<WalletOptions> options)
+    public HangfireService(IAccountService accountService, IEthereumService ethService, IAsyncRepository<Account> repository, IOptions<WalletOptions> options, IOptions<TransactionOptions> txOptions)
     {
       _accountService = accountService;
       _ethService = ethService;
       _repository = repository;
       _options = options;
+      _txOptions = txOptions;
     }
 
     public async Task<List<string>> Transfer()
@@ -38,7 +40,7 @@ namespace Wallet.Infrastructure.Services
         foreach (var address in account.Addresses)
         {
           string balance = await _ethService.GetBalanceAsync(address.PublicAddress);
-          if (balance != "0")
+          if (balance < _txOptions.Value.MinimumDeposit)
           {
             int accountIndex = account.AccountIndex;
             int addressIndex = address.AddressIndex;

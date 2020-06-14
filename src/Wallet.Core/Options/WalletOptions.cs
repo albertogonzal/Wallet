@@ -1,5 +1,5 @@
 using System;
-namespace Wallet.Core
+namespace Wallet.Core.Options
 {
   public class WalletOptions
   {

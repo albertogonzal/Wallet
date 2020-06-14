@@ -14,8 +14,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Wallet.Core;
 using Wallet.Core.Entities;
+using Wallet.Core.Options;
 using Wallet.Core.Interfaces;
 using Wallet.Infrastructure.Data;
 using Wallet.Infrastructure.Identity;
@@ -35,6 +35,7 @@ namespace Wallet.Web
     public void ConfigureServices(IServiceCollection services)
     {
       services.Configure<WalletOptions>(Configuration.GetSection("WalletOptions"));
+      services.Configure<TransactionOptions>(Configuration.GetSection("TransactionOptions"));
       services.AddDbContext<WalletDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("WalletDb")));
       services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("IdentityDb")));
       services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityDbContext>();
@@ -80,7 +81,7 @@ namespace Wallet.Web
       app.UseAuthorization();
 
       app.UseHangfireDashboard();
-      RecurringJob.AddOrUpdate<IBackgroundService>(service => service.Transfer(), () => "0 * * ? * *");
+      RecurringJob.AddOrUpdate<IBackgroundService>(service => service.Transfer(), () => "*/5 * * * *");
 
       app.UseEndpoints(endpoints =>
       {
