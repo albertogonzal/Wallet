@@ -40,16 +40,13 @@ namespace Wallet.Infrastructure.Services
     {
       try
       {
-
         Web3 txWeb3 = Web3Client(accountIndex, addressIndex);
 
-        // decimal balanceWei = Web3.Convert.ToWei(amountEth);
         decimal gasPriceGwei = _txOptions.Value.GasPrice;
-        BigInteger gas = _txOptions.Value.Gas;
+        BigInteger gas = (BigInteger)_txOptions.Value.Gas;
 
         BigInteger gasPriceWei = Web3.Convert.ToWei(gasPriceGwei, UnitConversion.EthUnit.Gwei);
         BigInteger feeWei = gasPriceWei * gas;
-        // decimal balanceEth = Web3.Convert.FromWei(new BigInteger(balanceWei));
         decimal feeEth = Web3.Convert.FromWei(feeWei);
         decimal amountToSendEth = amountEth - feeEth;
 

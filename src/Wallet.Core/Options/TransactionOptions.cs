@@ -5,6 +5,6 @@ namespace Wallet.Core.Options
   {
     public decimal MinimumDeposit { get; set; }
     public decimal GasPrice { get; set; }
-    public BigInteger Gas { get; set; }
+    public decimal Gas { get; set; }
   }
 }

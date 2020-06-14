@@ -5,5 +5,6 @@ namespace Wallet.Core.Interfaces
   public interface IBackgroundService
   {
     Task<List<string>> Transfer();
+    Task Credit();
   }
 }

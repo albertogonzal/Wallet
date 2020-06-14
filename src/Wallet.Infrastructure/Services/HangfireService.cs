@@ -29,7 +29,6 @@ namespace Wallet.Infrastructure.Services
     public async Task<List<string>> Transfer()
     {
       List<string> txHashes = new List<string>();
-      Dictionary<int, List<(int, decimal)>> addresses = new Dictionary<int, List<(int, decimal)>>();
       var spec = new AccountWithAddressesSpecification();
       var allAccounts = await _repository.ListAsync(spec);
       var accounts = allAccounts.Where(a => a.AccountIndex != 0).ToList();
@@ -40,23 +39,36 @@ namespace Wallet.Infrastructure.Services
         foreach (var address in account.Addresses)
         {
           decimal balanceEth = await _ethService.GetBalanceAsync(address.PublicAddress);
-          if (balanceEth < _txOptions.Value.MinimumDeposit)
+          if (balanceEth > _txOptions.Value.MinimumDeposit)
           {
             int accountIndex = account.AccountIndex;
             int addressIndex = address.AddressIndex;
-            if (!addresses.ContainsKey(accountIndex))
-            {
-              addresses.Add(accountIndex, new List<(int AddressIndex, decimal Balance)>());
-            }
-            addresses[accountIndex].Add((addressIndex, balanceEth));
 
             string txHash = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balanceEth);
             txHashes.Add(txHash);
+          }
+          if (balanceEth > 0m)
+          {
+            txHashes.Add($"Not enough balance: {address.PublicAddress} : {balanceEth}");
           }
         }
       }
 
       return txHashes;
+    }
+
+    public async Task Credit()
+    {
+      // get deposits from past 24h from db marked as uncredited
+      // tx repository
+
+      // get confirmed deposits from web3
+      // web3 list tx
+
+      // foreach uncredited check if deposit is confirmed
+
+      // mark as credited, sender's account
+      //
     }
   }
 }
