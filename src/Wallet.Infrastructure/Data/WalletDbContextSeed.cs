@@ -34,6 +34,13 @@ namespace Wallet.Infrastructure.Data
         await context.TransactionTypes.AddRangeAsync(transactionTypes);
         await context.SaveChangesAsync();
       }
+
+      if (!context.TransactionStatuses.Any())
+      {
+        var transactionStatuses = TransactionStatus.GetAll<TransactionStatus>();
+        await context.TransactionStatuses.AddRangeAsync(transactionStatuses);
+        await context.SaveChangesAsync();
+      }
     }
   }
 }

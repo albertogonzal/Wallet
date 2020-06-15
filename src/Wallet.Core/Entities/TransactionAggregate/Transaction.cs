@@ -5,20 +5,20 @@ namespace Wallet.Core.Entities
   public class Transaction : BaseEntity, IAggregateRoot
   {
     private readonly int _typeValue;
-    public Transaction(int typeValue, string transactionHash, string sender, string recipient, int status)
+    private readonly int _statusValue;
+    public Transaction(int typeValue, int statusValue, string transactionHash, string sender, string recipient)
     {
       _typeValue = typeValue;
+      _statusValue = statusValue;
       TransactionHash = transactionHash;
       Sender = sender;
       Recipient = recipient;
-      Status = status;
     }
 
     public TransactionType Type => TransactionType.FromValue<TransactionType>(_typeValue);
+    public TransactionStatus Status => TransactionStatus.FromValue<TransactionStatus>(_statusValue);
     public string TransactionHash { get; private set; }
     public string Sender { get; private set; }
     public string Recipient { get; private set; }
-    public int Status { get; private set; }
-
   }
 }

@@ -14,6 +14,7 @@ namespace Wallet.Infrastructure.Data
     public DbSet<Balance> Balances { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<TransactionType> TransactionTypes { get; set; }
+    public DbSet<TransactionStatus> TransactionStatuses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -23,8 +24,11 @@ namespace Wallet.Infrastructure.Data
 
       builder.Entity<Transaction>().Ignore(t => t.Type);
       builder.Entity<Transaction>().Property<int>("_typeValue").UsePropertyAccessMode(PropertyAccessMode.PreferFieldDuringConstruction).HasColumnName("Type");
+      builder.Entity<Transaction>().Property<int>("_statusValue").UsePropertyAccessMode(PropertyAccessMode.PreferFieldDuringConstruction).HasColumnName("Status");
 
       builder.Entity<TransactionType>().Property(t => t.Value).HasColumnType("int");
+
+      builder.Entity<TransactionStatus>().Property(t => t.Value).HasColumnType("int");
     }
   }
 }
