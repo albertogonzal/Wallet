@@ -12,16 +12,27 @@ namespace Wallet.Infrastructure.Data
 {
   public static class WalletDbContextSeed
   {
-    public static async Task SeedAsync(IAsyncRepository<Account> accountRepository, IAccountService service, UserManager<ApplicationUser> userManager)
+    public static async Task SeedAsync(WalletDbContext context, AppIdentityDbContext identityContext)
     {
-      var admin = await userManager.FindByNameAsync("admin@wallet.com");
-      var adminId = new Guid(admin.Id);
-
-      var account = (await accountRepository.ListAsync()).Where(a => a.UserId == adminId).FirstOrDefault();
-      if (account == null)
+      if (!context.Accounts.Any())
       {
-        account = new Account(adminId, 0);
-        await accountRepository.AddAsync(account);
+        var adminRole = await identityContext.Roles.Where(r => r.Name == "admin").FirstOrDefaultAsync();
+        var adminUserRole = await identityContext.UserRoles.Where(r => r.RoleId == adminRole.Id).FirstOrDefaultAsync();
+        var admin = await identityContext.Users.Where(u => u.Id == adminUserRole.UserId).FirstOrDefaultAsync();
+
+        if (admin != null)
+        {
+          var account = new Account(new Guid(admin.Id), 0);
+          await context.Accounts.AddAsync(account);
+          await context.SaveChangesAsync();
+        }
+      }
+
+      if (!context.TransactionTypes.Any())
+      {
+        var transactionTypes = TransactionType.GetAll<TransactionType>();
+        await context.TransactionTypes.AddRangeAsync(transactionTypes);
+        await context.SaveChangesAsync();
       }
     }
   }

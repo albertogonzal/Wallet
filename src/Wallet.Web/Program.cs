@@ -24,15 +24,13 @@ namespace Wallet.Web
       using (var scope = host.Services.CreateScope())
       {
         var services = scope.ServiceProvider;
-        var dbContext = services.GetRequiredService<AppIdentityDbContext>();
+        var identityDbContext = services.GetRequiredService<AppIdentityDbContext>();
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         await AppIdentityDbContextSeed.SeedAsync(userManager, roleManager);
 
         var walletDbContext = services.GetRequiredService<WalletDbContext>();
-        var accountRepository = services.GetRequiredService<IAsyncRepository<Account>>();
-        var service = services.GetRequiredService<IAccountService>();
-        await WalletDbContextSeed.SeedAsync(accountRepository, service, userManager);
+        await WalletDbContextSeed.SeedAsync(walletDbContext, identityDbContext);
       }
 
       host.Run();

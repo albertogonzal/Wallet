@@ -16,12 +16,6 @@ namespace Wallet.Infrastructure.Identity
 
       admin = await userManager.FindByNameAsync(adminUserName);
       await userManager.AddToRoleAsync(admin, "admin");
-
-      var user = new ApplicationUser { UserName = "user@wallet.com", Email = "user@wallet.com" };
-      await userManager.CreateAsync(user, "PAssword12!@");
-
-      var user2 = new ApplicationUser { UserName = "user2@wallet.com", Email = "user2@wallet.com" };
-      await userManager.CreateAsync(user2, "PAssword12!@");
     }
   }
 }
