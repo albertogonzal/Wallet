@@ -14,6 +14,8 @@ using Wallet.Core.Options;
 using Wallet.Core.Interfaces;
 using Wallet.Infrastructure.Helpers;
 using Nethereum.Util;
+using Wallet.Core.Entities;
+using Nethereum.RPC.TransactionManagers;
 
 namespace Wallet.Infrastructure.Services
 {
@@ -22,9 +24,11 @@ namespace Wallet.Infrastructure.Services
     private readonly Web3 _web3;
     private readonly IOptions<WalletOptions> _options;
     private readonly IOptions<Core.Options.TransactionOptions> _txOptions;
+    private readonly IAsyncRepository<Wallet.Core.Entities.Transaction> _repository;
 
-    public Web3Service(IOptions<WalletOptions> options, IOptions<Core.Options.TransactionOptions> txOptions)
+    public Web3Service(IAsyncRepository<Wallet.Core.Entities.Transaction> repository, IOptions<WalletOptions> options, IOptions<Core.Options.TransactionOptions> txOptions)
     {
+      _repository = repository;
       _options = options;
       _txOptions = txOptions;
       _web3 = Web3Client(0, 0);
@@ -51,7 +55,19 @@ namespace Wallet.Infrastructure.Services
         decimal amountToSendEth = amountEth - feeEth;
 
         var txReceipt = await txWeb3.Eth.GetEtherTransferService().TransferEtherAndWaitForReceiptAsync(recipient, amountToSendEth, gasPriceGwei, gas);
-        return txReceipt.TransactionHash;
+        var txHash = txReceipt.TransactionHash;
+
+        var sender = txWeb3.TransactionManager.Account.Address;
+        var transactionType = accountIndex == 0 && addressIndex == 0
+          ? TransactionType.FromName<TransactionType>("withdraw").Value
+          : TransactionType.FromName<TransactionType>("deposit").Value;
+
+        var transactionStatus = TransactionStatus.FromName<TransactionStatus>("pending").Value;
+
+        var transaction = new Wallet.Core.Entities.Transaction(transactionType, transactionStatus, txHash, sender, recipient, amountToSendEth);
+        await _repository.AddAsync(transaction);
+
+        return txHash;
       }
       catch (Exception ex)
       {

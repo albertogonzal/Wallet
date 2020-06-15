@@ -59,7 +59,7 @@ namespace Wallet.Infrastructure.Services
 
     public async Task Credit()
     {
-      // get deposits from past 24h from db marked as uncredited
+      // get deposits from past 24h from db marked as pending
       // tx repository
 
       // get confirmed deposits from web3

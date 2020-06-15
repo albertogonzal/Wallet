@@ -23,6 +23,7 @@ namespace Wallet.Infrastructure.Data
       builder.Entity<Balance>().Property(b => b.Amount).HasColumnType("decimal(29, 2)");
 
       builder.Entity<Transaction>().Ignore(t => t.Type);
+      builder.Entity<Transaction>().Property(t => t.Amount).HasColumnType("decimal(29, 2)");
       builder.Entity<Transaction>().Property<int>("_typeValue").UsePropertyAccessMode(PropertyAccessMode.PreferFieldDuringConstruction).HasColumnName("Type");
       builder.Entity<Transaction>().Property<int>("_statusValue").UsePropertyAccessMode(PropertyAccessMode.PreferFieldDuringConstruction).HasColumnName("Status");
 
