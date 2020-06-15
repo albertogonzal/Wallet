@@ -14,14 +14,16 @@ namespace Wallet.Infrastructure.Services
     private readonly IAccountService _accountService;
     private readonly IEthereumService _ethService;
     private readonly IAsyncRepository<Account> _repository;
+    private readonly IAsyncRepository<Transaction> _txRepository;
     private readonly IOptions<WalletOptions> _options;
     private readonly IOptions<TransactionOptions> _txOptions;
 
-    public HangfireService(IAccountService accountService, IEthereumService ethService, IAsyncRepository<Account> repository, IOptions<WalletOptions> options, IOptions<TransactionOptions> txOptions)
+    public HangfireService(IAccountService accountService, IEthereumService ethService, IAsyncRepository<Account> repository, IAsyncRepository<Transaction> txRepository, IOptions<WalletOptions> options, IOptions<TransactionOptions> txOptions)
     {
       _accountService = accountService;
       _ethService = ethService;
       _repository = repository;
+      _txRepository = txRepository;
       _options = options;
       _txOptions = txOptions;
     }
@@ -59,8 +61,8 @@ namespace Wallet.Infrastructure.Services
 
     public async Task Credit()
     {
-      // get deposits from past 24h from db marked as pending
-      // tx repository
+      // fix query with specification
+      var txPending = (await _txRepository.ListAsync()).Where(t => t.Status.Name == "pending");
 
       // get confirmed deposits from web3
       // web3 list tx

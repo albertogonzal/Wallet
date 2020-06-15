@@ -4,20 +4,20 @@ namespace Wallet.Core.Entities
 {
   public class Transaction : BaseEntity, IAggregateRoot
   {
-    private readonly int _typeValue;
-    private readonly int _statusValue;
-    public Transaction(int typeValue, int statusValue, string transactionHash, string sender, string recipient, decimal amount)
+    private readonly string _type;
+    private readonly string _status;
+    public Transaction(string type, string status, string transactionHash, string sender, string recipient, decimal amount)
     {
-      _typeValue = typeValue;
-      _statusValue = statusValue;
+      _type = type;
+      _status = status;
       TransactionHash = transactionHash;
       Sender = sender;
       Recipient = recipient;
       Amount = amount;
     }
 
-    public TransactionType Type => TransactionType.FromValue<TransactionType>(_typeValue);
-    public TransactionStatus Status => TransactionStatus.FromValue<TransactionStatus>(_statusValue);
+    public TransactionType Type => TransactionType.FromName<TransactionType>(_type);
+    public TransactionStatus Status => TransactionStatus.FromName<TransactionStatus>(_status);
     public string TransactionHash { get; private set; }
     public string Sender { get; private set; }
     public string Recipient { get; private set; }

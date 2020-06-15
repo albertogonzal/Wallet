@@ -59,12 +59,12 @@ namespace Wallet.Infrastructure.Services
 
         var sender = txWeb3.TransactionManager.Account.Address;
         var transactionType = accountIndex == 0 && addressIndex == 0
-          ? TransactionType.FromName<TransactionType>("withdraw").Value
-          : TransactionType.FromName<TransactionType>("deposit").Value;
+          ? TransactionType.FromName<TransactionType>("withdraw").Name
+          : TransactionType.FromName<TransactionType>("deposit").Name;
 
-        var transactionStatus = TransactionStatus.FromName<TransactionStatus>("pending").Value;
+        var transactionStatus = TransactionStatus.FromName<TransactionStatus>("pending").Name;
 
-        var transaction = new Wallet.Core.Entities.Transaction(transactionType, transactionStatus, txHash, sender, recipient, amountToSendEth);
+        var transaction = new Wallet.Core.Entities.Transaction(transactionType, transactionStatus, txHash, sender, recipient, amountEth);
         await _repository.AddAsync(transaction);
 
         return txHash;

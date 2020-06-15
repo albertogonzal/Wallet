@@ -82,6 +82,7 @@ namespace Wallet.Web
 
       app.UseHangfireDashboard();
       RecurringJob.AddOrUpdate<IBackgroundService>(service => service.Transfer(), () => "*/5 * * * *");
+      RecurringJob.AddOrUpdate<IBackgroundService>(service => service.Credit(), () => "*/5 * * * *");
 
       app.UseEndpoints(endpoints =>
       {
