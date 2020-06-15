@@ -11,7 +11,17 @@ namespace Wallet.Core.Entities
       Amount = amount;
     }
 
-    public Guid UserId { get; }
-    public decimal Amount { get; }
+    public Guid UserId { get; private set; }
+    public decimal Amount { get; private set; }
+
+    public void Deposit(decimal amount)
+    {
+      Amount += amount;
+    }
+
+    public void Withdraw(decimal amount)
+    {
+      Amount -= amount;
+    }
   }
 }
