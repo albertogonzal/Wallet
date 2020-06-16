@@ -61,8 +61,10 @@ namespace Wallet.Infrastructure.Services
 
     public async Task Credit()
     {
-      // fix query with specification
-      var txPending = (await _txRepository.ListAsync()).Where(t => t.Status.Name == "pending");
+      // fix iqueryable to run on sqlserver using specification
+      // var spec = new TransactionsByStatusSpecification(TransactionStatus.FromName<TransactionStatus>("pending"));
+      // var txPending = await _txRepository.ListAsync(spec);
+      var txPending = (await _txRepository.ListAsync()).Where(t => t.Status.Name == "pending").ToList();
 
       // get confirmed deposits from web3
       // web3 list tx
