@@ -16,6 +16,7 @@ using Wallet.Infrastructure.Helpers;
 using Nethereum.Util;
 using Wallet.Core.Entities;
 using Nethereum.RPC.TransactionManagers;
+using Wallet.Core.Specifications;
 
 namespace Wallet.Infrastructure.Services
 {
@@ -25,13 +26,17 @@ namespace Wallet.Infrastructure.Services
     private readonly IOptions<WalletOptions> _options;
     private readonly IOptions<Core.Options.TransactionOptions> _txOptions;
     private readonly IAsyncRepository<Wallet.Core.Entities.Transaction> _repository;
+    private readonly IAsyncRepository<Balance> _balanceRepository;
+    private readonly IAsyncRepository<Core.Entities.Account> _accountRepository;
 
-    public Web3Service(IAsyncRepository<Wallet.Core.Entities.Transaction> repository, IOptions<WalletOptions> options, IOptions<Core.Options.TransactionOptions> txOptions)
+    public Web3Service(IAsyncRepository<Wallet.Core.Entities.Transaction> repository, IAsyncRepository<Balance> balanceRepository, IAsyncRepository<Core.Entities.Account> accountRepository, IOptions<WalletOptions> options, IOptions<Core.Options.TransactionOptions> txOptions)
     {
+      _accountRepository = accountRepository;
+      _balanceRepository = balanceRepository;
       _repository = repository;
       _options = options;
       _txOptions = txOptions;
-      _web3 = Web3Client(0, 0);
+      _web3 = Web3Client();
     }
 
     public async Task<decimal> GetBalanceAsync(string address)
@@ -64,7 +69,9 @@ namespace Wallet.Infrastructure.Services
 
         var transactionStatus = TransactionStatus.FromName<TransactionStatus>("pending").Name;
 
-        var transaction = new Wallet.Core.Entities.Transaction(transactionType, transactionStatus, txHash, sender, recipient, amountEth);
+        var spec = new AccountByIndexSpecification(accountIndex);
+        var accountEntity = await _accountRepository.FirstOrDefaultAsync(spec);
+        var transaction = new Wallet.Core.Entities.Transaction(transactionType, transactionStatus, txHash, sender, recipient, amountEth, accountEntity.UserId);
         await _repository.AddAsync(transaction);
 
         return txHash;
@@ -76,6 +83,34 @@ namespace Wallet.Infrastructure.Services
       }
     }
 
+    public async Task VerifyTransactionAsync(Wallet.Core.Entities.Transaction transaction)
+    {
+      Web3 txWeb3 = Web3Client();
+
+      var liveTransaction = await txWeb3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(transaction.TransactionHash);
+      var block = await txWeb3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+      var confirmations = block.Value - liveTransaction.BlockNumber.Value;
+
+      if (confirmations > 12)
+      {
+        transaction.UpdateStatus(TransactionStatus.FromName<TransactionStatus>("completed"));
+        await _repository.UpdateAsync(transaction);
+
+        var spec = new BalanceByUserIdSpecification(transaction.UserId);
+        var balance = await _balanceRepository.FirstOrDefaultAsync(spec);
+        if (balance == null)
+        {
+          balance = new Balance(transaction.UserId, transaction.Amount);
+          await _balanceRepository.AddAsync(balance);
+        }
+        else
+        {
+          balance.Deposit(transaction.Amount);
+          await _balanceRepository.UpdateAsync(balance);
+        }
+      }
+    }
+
     private Web3 Web3Client(int accountIndex, int addressIndex)
     {
       var ethEcKey = EthereumHelper.GetEthECKey(accountIndex, addressIndex, _options.Value.Seed);
@@ -84,6 +119,11 @@ namespace Wallet.Infrastructure.Services
       var client = new Nethereum.JsonRpc.Client.RpcClient(new Uri(clientUri));
 
       return new Web3(account, client);
+    }
+
+    private Web3 Web3Client()
+    {
+      return Web3Client(0, 0);
     }
   }
 }

@@ -66,13 +66,10 @@ namespace Wallet.Infrastructure.Services
       // var txPending = await _txRepository.ListAsync(spec);
       var txPending = (await _txRepository.ListAsync()).Where(t => t.Status.Name == "pending").ToList();
 
-      // get confirmed deposits from web3
-      // web3 list tx
-
-      // foreach uncredited check if deposit is confirmed
-
-      // mark as credited, sender's account
-      //
+      foreach (var tx in txPending)
+      {
+        await _ethService.VerifyTransactionAsync(tx);
+      }
     }
   }
 }

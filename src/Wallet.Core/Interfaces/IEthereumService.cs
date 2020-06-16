@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Wallet.Core.Entities;
 
 namespace Wallet.Core.Interfaces
 {
@@ -6,5 +7,6 @@ namespace Wallet.Core.Interfaces
   {
     Task<decimal> GetBalanceAsync(string address);
     Task<string> CreateTransactionAsync(int accountIndex, int addressIndex, string recipient, decimal amountEth);
+    Task VerifyTransactionAsync(Transaction transaction);
   }
 }

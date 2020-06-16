@@ -1,12 +1,13 @@
+using System;
 using Wallet.Core.Interfaces;
 
 namespace Wallet.Core.Entities
 {
   public class Transaction : BaseEntity, IAggregateRoot
   {
-    private readonly string _type;
-    private readonly string _status;
-    public Transaction(string type, string status, string transactionHash, string sender, string recipient, decimal amount)
+    private string _type;
+    private string _status;
+    public Transaction(string type, string status, string transactionHash, string sender, string recipient, decimal amount, Guid userId)
     {
       _type = type;
       _status = status;
@@ -14,6 +15,7 @@ namespace Wallet.Core.Entities
       Sender = sender;
       Recipient = recipient;
       Amount = amount;
+      UserId = userId;
     }
 
     public TransactionType Type => TransactionType.FromName<TransactionType>(_type);
@@ -22,5 +24,11 @@ namespace Wallet.Core.Entities
     public string Sender { get; private set; }
     public string Recipient { get; private set; }
     public decimal Amount { get; private set; }
+    public Guid UserId { get; private set; }
+
+    public void UpdateStatus(TransactionStatus status)
+    {
+      _status = status.Name;
+    }
   }
 }
