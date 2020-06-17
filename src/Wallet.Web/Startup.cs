@@ -20,6 +20,7 @@ using Wallet.Core.Interfaces;
 using Wallet.Infrastructure.Data;
 using Wallet.Infrastructure.Identity;
 using Wallet.Infrastructure.Services;
+using Wallet.Core.Services;
 
 namespace Wallet.Web
 {
@@ -63,7 +64,9 @@ namespace Wallet.Web
       services.AddHangfireServer();
 
       services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
+      services.AddScoped<IBalanceRepository, BalanceRepository>();
       services.AddScoped<IAccountService, AccountService>();
+      services.AddScoped<IBalanceService, BalanceService>();
       services.AddScoped<IEthereumService, Web3Service>();
       services.AddScoped<IBackgroundService, HangfireService>();
       services.AddControllers();

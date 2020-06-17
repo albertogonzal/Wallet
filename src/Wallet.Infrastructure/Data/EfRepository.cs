@@ -10,7 +10,7 @@ namespace Wallet.Infrastructure.Data
 {
   public class EfRepository<T> : IAsyncRepository<T> where T : BaseEntity, IAggregateRoot
   {
-    private readonly WalletDbContext _dbContext;
+    protected readonly WalletDbContext _dbContext;
 
     public EfRepository(WalletDbContext dbContext)
     {

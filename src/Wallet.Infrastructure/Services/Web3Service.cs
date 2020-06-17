@@ -45,7 +45,7 @@ namespace Wallet.Infrastructure.Services
       return Web3.Convert.FromWei(balanceWei);
     }
 
-    public async Task<string> CreateTransactionAsync(int accountIndex, int addressIndex, string recipient, decimal amountEth)
+    public async Task<Wallet.Core.Entities.Transaction> CreateTransactionAsync(int accountIndex, int addressIndex, string recipient, decimal amountEth)
     {
       try
       {
@@ -74,12 +74,13 @@ namespace Wallet.Infrastructure.Services
         var transaction = new Wallet.Core.Entities.Transaction(transactionType, transactionStatus, txHash, sender, recipient, amountEth, accountEntity.UserId);
         await _repository.AddAsync(transaction);
 
-        return txHash;
+        return transaction;
       }
       catch (Exception ex)
       {
         Console.WriteLine($"accountIndex: {accountIndex}, addressIndex: {addressIndex}, {ex.ToString()}");
-        return $"accountIndex: {accountIndex}, addressIndex: {addressIndex}, {ex.ToString()}";
+        // return $"accountIndex: {accountIndex}, addressIndex: {addressIndex}, {ex.ToString()}";
+        return null;
       }
     }
 

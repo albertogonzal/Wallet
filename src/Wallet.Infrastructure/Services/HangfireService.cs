@@ -46,8 +46,8 @@ namespace Wallet.Infrastructure.Services
             int accountIndex = account.AccountIndex;
             int addressIndex = address.AddressIndex;
 
-            string txHash = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balanceEth);
-            txHashes.Add(txHash);
+            var transaction = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balanceEth);
+            txHashes.Add(transaction.TransactionHash);
           }
           if (balanceEth > 0m)
           {
@@ -64,7 +64,7 @@ namespace Wallet.Infrastructure.Services
       // fix iqueryable to run on sqlserver using specification
       // var spec = new TransactionsByStatusSpecification(TransactionStatus.FromName<TransactionStatus>("pending"));
       // var txPending = await _txRepository.ListAsync(spec);
-      var txPending = (await _txRepository.ListAsync()).Where(t => t.Status.Name == "pending").ToList();
+      var txPending = (await _txRepository.ListAsync()).Where(t => t.Status.Name == "pending" && t.Type.Name == "deposit").ToList();
 
       foreach (var tx in txPending)
       {
