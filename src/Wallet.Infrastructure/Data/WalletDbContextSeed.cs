@@ -14,11 +14,12 @@ namespace Wallet.Infrastructure.Data
   {
     public static async Task SeedAsync(WalletDbContext context, AppIdentityDbContext identityContext)
     {
+      var adminRole = await identityContext.Roles.Where(r => r.Name == "admin").FirstOrDefaultAsync();
+      var adminUserRole = await identityContext.UserRoles.Where(r => r.RoleId == adminRole.Id).FirstOrDefaultAsync();
+      var admin = await identityContext.Users.Where(u => u.Id == adminUserRole.UserId).FirstOrDefaultAsync();
+
       if (!context.Accounts.Any())
       {
-        var adminRole = await identityContext.Roles.Where(r => r.Name == "admin").FirstOrDefaultAsync();
-        var adminUserRole = await identityContext.UserRoles.Where(r => r.RoleId == adminRole.Id).FirstOrDefaultAsync();
-        var admin = await identityContext.Users.Where(u => u.Id == adminUserRole.UserId).FirstOrDefaultAsync();
 
         if (admin != null)
         {
@@ -26,6 +27,13 @@ namespace Wallet.Infrastructure.Data
           await context.Accounts.AddAsync(account);
           await context.SaveChangesAsync();
         }
+      }
+
+      if (!context.Balances.Any())
+      {
+        var balance = new Balance(new Guid(admin.Id), 0);
+        await context.Balances.AddAsync(balance);
+        await context.SaveChangesAsync();
       }
 
       if (!context.TransactionTypes.Any())

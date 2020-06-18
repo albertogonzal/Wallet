@@ -79,7 +79,6 @@ namespace Wallet.Infrastructure.Services
       catch (Exception ex)
       {
         Console.WriteLine($"accountIndex: {accountIndex}, addressIndex: {addressIndex}, {ex.ToString()}");
-        // return $"accountIndex: {accountIndex}, addressIndex: {addressIndex}, {ex.ToString()}";
         return null;
       }
     }
