@@ -7,6 +7,7 @@ namespace Wallet.Core.Entities
   {
     private string _type;
     private string _status;
+
     public Transaction(string type, string status, string transactionHash, string sender, string recipient, decimal amount, Guid userId)
     {
       _type = type;

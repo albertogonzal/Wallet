@@ -39,6 +39,8 @@ namespace Wallet.Core.Entities
 
     public override int GetHashCode() => Value.GetHashCode();
 
+    public int CompareTo(object other) => Id.CompareTo(((Enumeration)other).Id);
+
     public static T FromValue<T>(int value) where T : Enumeration
     {
       var matchingItem = Parse<T, int>(value, "value", item => item.Value == value);
@@ -63,11 +65,6 @@ namespace Wallet.Core.Entities
       }
 
       return matchingItem;
-    }
-
-    public int CompareTo(object obj)
-    {
-      throw new NotImplementedException();
     }
   }
 }

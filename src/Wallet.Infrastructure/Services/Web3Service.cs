@@ -12,7 +12,6 @@ using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
 using Wallet.Core.Options;
 using Wallet.Core.Interfaces;
-using Wallet.Infrastructure.Helpers;
 using Nethereum.Util;
 using Wallet.Core.Entities;
 using Nethereum.RPC.TransactionManagers;
@@ -111,9 +110,14 @@ namespace Wallet.Infrastructure.Services
       }
     }
 
+    public string GetEthAddress(int accountIndex, int addressIndex)
+    {
+      return GetEthECKey(accountIndex, addressIndex).GetPublicAddress();
+    }
+
     private Web3 Web3Client(int accountIndex, int addressIndex)
     {
-      var ethEcKey = EthereumHelper.GetEthECKey(accountIndex, addressIndex, _options.Value.Seed);
+      var ethEcKey = GetEthECKey(accountIndex, addressIndex);
       var account = new Nethereum.Web3.Accounts.Account(ethEcKey);
       var clientUri = _options.Value.Network == "mainnet" ? _options.Value.MainNetUri : _options.Value.TestNetUri;
       var client = new Nethereum.JsonRpc.Client.RpcClient(new Uri(clientUri));
@@ -124,6 +128,19 @@ namespace Wallet.Infrastructure.Services
     private Web3 Web3Client()
     {
       return Web3Client(0, 0);
+    }
+
+    private EthECKey GetEthECKey(int accountIndex, int addressIndex)
+    {
+      var masterKey = new ExtKey(_options.Value.Seed);
+
+      string keyPathString = $"m/44'/60'/{accountIndex}'/0/{addressIndex}";
+      var keyPath = new NBitcoin.KeyPath(keyPathString);
+
+      var privateKey = masterKey.Derive(keyPath).PrivateKey.ToBytes();
+      var ethEcKey = new EthECKey(privateKey, true);
+
+      return ethEcKey;
     }
   }
 }

@@ -8,5 +8,6 @@ namespace Wallet.Core.Interfaces
     Task<decimal> GetBalanceAsync(string address);
     Task<Transaction> CreateTransactionAsync(int accountIndex, int addressIndex, string recipient, decimal amountEth);
     Task VerifyTransactionAsync(Transaction transaction);
+    string GetEthAddress(int accountIndex, int addressIndex);
   }
 }

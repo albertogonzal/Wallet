@@ -1,32 +1,22 @@
 using System.Linq;
-using System.Text;
-using NBitcoin;
-using Nethereum.Web3;
-using Nethereum.Web3.Accounts;
-using Nethereum.Util;
-using Nethereum.Hex.HexConvertors.Extensions;
-using Nethereum.HdWallet;
 using System;
 using Wallet.Core.Interfaces;
 using System.Threading.Tasks;
 using Wallet.Core.Entities;
-using Nethereum.Signer;
 using Wallet.Core.Specifications;
-using Microsoft.Extensions.Options;
 using Wallet.Core.Options;
-using Wallet.Infrastructure.Helpers;
 
-namespace Wallet.Infrastructure.Services
+namespace Wallet.Core.Services
 {
   public class AccountService : IAccountService
   {
     private readonly IAsyncRepository<Core.Entities.Account> _repository;
-    private readonly IOptions<WalletOptions> _options;
+    private readonly IEthereumService _ethService;
 
-    public AccountService(IAsyncRepository<Core.Entities.Account> repository, IOptions<WalletOptions> options)
+    public AccountService(IAsyncRepository<Core.Entities.Account> repository, IEthereumService ethService)
     {
+      _ethService = ethService;
       _repository = repository;
-      _options = options;
     }
 
     public async Task NewAccount(Guid userId)
@@ -49,8 +39,7 @@ namespace Wallet.Infrastructure.Services
       int accountIndex = account.AccountIndex;
       int addressIndex = account.Addresses.Count();
 
-      var ethEcKey = EthereumHelper.GetEthECKey(accountIndex, addressIndex, _options.Value.Seed);
-      string publicAddress = ethEcKey.GetPublicAddress();
+      string publicAddress = _ethService.GetEthAddress(accountIndex, addressIndex);
 
       var newAddress = new Address(accountId, addressIndex, publicAddress);
       account.AddAddress(newAddress);
