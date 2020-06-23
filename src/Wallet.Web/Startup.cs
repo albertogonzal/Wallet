@@ -1,3 +1,4 @@
+using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,8 +20,11 @@ using Wallet.Core.Options;
 using Wallet.Core.Interfaces;
 using Wallet.Infrastructure.Data;
 using Wallet.Infrastructure.Identity;
+using Wallet.Web.Options;
 using Wallet.Infrastructure.Services;
 using Wallet.Core.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Wallet.Web
 {
@@ -37,9 +41,12 @@ namespace Wallet.Web
     {
       services.Configure<WalletOptions>(Configuration.GetSection("WalletOptions"));
       services.Configure<TransactionOptions>(Configuration.GetSection("TransactionOptions"));
+      services.Configure<JwtOptions>(Configuration.GetSection("JwtOptions"));
+
       services.AddDbContext<WalletDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("WalletDb")));
       services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("IdentityDb")));
-      services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityDbContext>();
+
+      services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityDbContext>().AddDefaultTokenProviders();
       services.Configure<IdentityOptions>(options =>
       {
         options.Password.RequiredLength = 4;
@@ -48,6 +55,27 @@ namespace Wallet.Web
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireUppercase = false;
       });
+
+      services.AddAuthentication(options =>
+      {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+      })
+      .AddJwtBearer(config =>
+      {
+        config.RequireHttpsMetadata = false;
+        config.SaveToken = true;
+        config.TokenValidationParameters = new TokenValidationParameters
+        {
+          ValidIssuer = Configuration["JwtOptions:Issuer"],
+          ValidAudience = Configuration["JwtOptions:Issuer"],
+          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtOptions:Key"].ToString())),
+          ClockSkew = TimeSpan.Zero
+        };
+      });
+      services.AddAuthorization();
+
       services.AddHangfire(configuration => configuration
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
         .UseSimpleAssemblyNameTypeSerializer()
@@ -70,6 +98,19 @@ namespace Wallet.Web
       services.AddScoped<IEthereumService, Web3Service>();
       services.AddScoped<IBackgroundService, HangfireService>();
       services.AddControllers();
+
+      services.AddCors(options =>
+      {
+        options.AddPolicy("AllowAllCors", builder =>
+        {
+          builder.AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .SetIsOriginAllowedToAllowWildcardSubdomains()
+            .SetIsOriginAllowed(requestingOrigin => true)
+            .Build();
+        });
+      });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IBackgroundJobClient backgroundJobs)
@@ -78,6 +119,7 @@ namespace Wallet.Web
       {
         app.UseDeveloperExceptionPage();
       }
+      app.UseCors("AllowAllCors");
       app.UseHttpsRedirection();
       app.UseRouting();
       app.UseAuthentication();
