@@ -39,7 +39,8 @@ namespace Wallet.Infrastructure.Data
 
       if (!context.Balances.Any())
       {
-        var balance = new Balance(new Guid(admin.Id), 0);
+        var ethAsset = await context.Assets.FirstOrDefaultAsync(a => a.Symbol == "eth");
+        var balance = new Balance(new Guid(admin.Id), ethAsset.Id, 0);
         await context.Balances.AddAsync(balance);
         await context.SaveChangesAsync();
       }

@@ -5,6 +5,6 @@ namespace Wallet.Core.Interfaces
 {
   public interface IBalanceService
   {
-    Task Withdraw(Guid userId, string address, decimal amount);
+    Task Withdraw(Guid userId, Guid assetId, string address, decimal amount);
   }
 }

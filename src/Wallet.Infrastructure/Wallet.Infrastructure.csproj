@@ -13,8 +13,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="NBitcoin" Version="5.0.40" />
-    <PackageReference Include="Nethereum" Version="0.92.0-date20200610-0309.git-6ab3739" />
+    <PackageReference Include="Nethereum" Version="0.0.2.60" />
     <PackageReference Include="Nethereum.HdWallet" Version="3.7.1" />
+    <PackageReference Include="Nethereum.StandardTokenEIP20" Version="3.7.1" />
   </ItemGroup>
 
   <PropertyGroup>

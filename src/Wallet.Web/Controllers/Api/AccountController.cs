@@ -42,9 +42,9 @@ namespace Wallet.Web.Controllers
     }
 
     [HttpPost]
-    public async Task Withdraw(Guid userId, string address, decimal amount)
+    public async Task Withdraw(Guid userId, Guid assetId, string address, decimal amount)
     {
-      await _balanceService.Withdraw(userId, address, amount);
+      await _balanceService.Withdraw(userId, assetId, address, amount);
     }
   }
 }

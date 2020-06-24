@@ -10,15 +10,17 @@ namespace Wallet.Core.Services
     private readonly IBalanceRepository _balanceRepository;
     private readonly IEthereumService _ethService;
     private readonly IAsyncRepository<Transaction> _txRepository;
+    private readonly IAsyncRepository<Asset> _assetRepository;
 
-    public BalanceService(IBalanceRepository balanceRepository, IAsyncRepository<Transaction> txRepository, IEthereumService ethService)
+    public BalanceService(IBalanceRepository balanceRepository, IAsyncRepository<Transaction> txRepository, IAsyncRepository<Asset> assetRepository, IEthereumService ethService)
     {
       _txRepository = txRepository;
       _ethService = ethService;
       _balanceRepository = balanceRepository;
+      _assetRepository = assetRepository;
     }
 
-    public async Task Withdraw(Guid userId, string address, decimal amount)
+    public async Task Withdraw(Guid userId, Guid assetId, string address, decimal amount)
     {
       try
       {
@@ -34,7 +36,9 @@ namespace Wallet.Core.Services
           throw new Exception("Not enough balance");
         }
 
-        var transaction = await _ethService.CreateTransactionAsync(0, 0, address, amount);
+        var asset = await _assetRepository.GetByIdAsync(assetId);
+
+        var transaction = await _ethService.CreateTransactionAsync(0, 0, address, amount, asset);
 
         if (String.IsNullOrEmpty(transaction.TransactionHash))
         {

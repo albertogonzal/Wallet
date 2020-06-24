@@ -48,13 +48,13 @@ namespace Wallet.Infrastructure.Services
               int accountIndex = account.AccountIndex;
               int addressIndex = address.AddressIndex;
 
-              var transaction = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balance);
+              var transaction = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balance, asset);
               txHashes.Add(transaction.TransactionHash);
             }
 
             if (balance > 0m)
             {
-              txHashes.Add($"Not enough balance: {address.PublicAddress} : {balance}");
+              txHashes.Add($"Not enough balance: {asset.Name} : {address.PublicAddress} : {balance}");
             }
           }
         }

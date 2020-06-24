@@ -18,8 +18,8 @@ using Nethereum.RPC.TransactionManagers;
 using Wallet.Core.Specifications;
 using Nethereum.StandardTokenEIP20;
 using Nethereum.ABI.FunctionEncoding.Attributes;
-// using Nethereum.StandardTokenEIP20.Functions;
 using Nethereum.Contracts.CQS;
+using Nethereum.StandardTokenEIP20.ContractDefinition;
 
 namespace Wallet.Infrastructure.Services
 {
@@ -44,17 +44,23 @@ namespace Wallet.Infrastructure.Services
 
     public async Task<decimal> GetBalanceAsync(string address, string contractAddress)
     {
+      if (contractAddress == null)
+      {
+        var balanceWei = await _web3.Eth.GetBalance.SendRequestAsync(address);
+        return Web3.Convert.FromWei(balanceWei);
+      }
       var tokenService = new StandardTokenService(_web3, contractAddress);
-      var balanceWei = await _web3.Eth.GetBalance.SendRequestAsync(address);
-      // var balance = await tokenService.GetBalanceOfAsync<BigInteger>(address);
-      return Web3.Convert.FromWei(balanceWei);
+      var balance = await tokenService.BalanceOfQueryAsync(address);
+      return Web3.Convert.FromWei(balance);
     }
 
-    public async Task<Wallet.Core.Entities.Transaction> CreateTransactionAsync(int accountIndex, int addressIndex, string recipient, decimal amountEth)
+    public async Task<Wallet.Core.Entities.Transaction> CreateTransactionAsync(int accountIndex, int addressIndex, string recipient, decimal amountEth, Asset asset)
     {
       try
       {
         Web3 txWeb3 = Web3Client(accountIndex, addressIndex);
+        var sender = txWeb3.TransactionManager.Account.Address;
+        var contractAddress = asset.ContractAddress;
 
         decimal gasPriceGwei = _txOptions.Value.GasPrice;
         BigInteger gas = (BigInteger)_txOptions.Value.Gas;
@@ -63,11 +69,30 @@ namespace Wallet.Infrastructure.Services
         BigInteger feeWei = gasPriceWei * gas;
         decimal feeEth = Web3.Convert.FromWei(feeWei);
         decimal amountToSendEth = amountEth - feeEth;
+        BigInteger amountToSendWei = Web3.Convert.ToWei(amountToSendEth);
 
-        var txReceipt = await txWeb3.Eth.GetEtherTransferService().TransferEtherAndWaitForReceiptAsync(recipient, amountToSendEth, gasPriceGwei, gas);
-        var txHash = txReceipt.TransactionHash;
+        string txHash;
+        if (contractAddress == null)
+        {
+          var txReceipt = await txWeb3.Eth.GetEtherTransferService().TransferEtherAndWaitForReceiptAsync(recipient, amountToSendEth, gasPriceGwei, gas);
+          txHash = txReceipt.TransactionHash;
+        }
+        else
+        {
+          var transactionMessage = new TransferFunction
+          {
+            FromAddress = sender,
+            To = recipient,
+            AmountToSend = amountToSendWei,
+            Gas = gas,
+            GasPrice = gasPriceWei
+          };
 
-        var sender = txWeb3.TransactionManager.Account.Address;
+          // txHash = await txWeb3.Eth.GetContractTransactionHandler<TransferFunction>().SendRequestAsync(contractAddress, transactionMessage);
+          txHash = (await txWeb3.Eth.GetContractTransactionHandler<TransferFunction>().SendRequestAndWaitForReceiptAsync(contractAddress, transactionMessage)).TransactionHash;
+        }
+
+
         var transactionType = accountIndex == 0 && addressIndex == 0
           ? TransactionType.FromName<TransactionType>("withdraw").Name
           : TransactionType.FromName<TransactionType>("deposit").Name;
@@ -76,7 +101,7 @@ namespace Wallet.Infrastructure.Services
 
         var spec = new AccountByIndexSpecification(accountIndex);
         var accountEntity = await _accountRepository.FirstOrDefaultAsync(spec);
-        var transaction = new Wallet.Core.Entities.Transaction(transactionType, transactionStatus, txHash, sender, recipient, amountEth, Guid.Empty, accountEntity.UserId);
+        var transaction = new Wallet.Core.Entities.Transaction(transactionType, transactionStatus, txHash, sender, recipient, amountEth, asset.Id, accountEntity.UserId);
         await _repository.AddAsync(transaction);
 
         return transaction;
@@ -105,7 +130,7 @@ namespace Wallet.Infrastructure.Services
         var balance = await _balanceRepository.FirstOrDefaultAsync(spec);
         if (balance == null)
         {
-          balance = new Balance(transaction.UserId, transaction.Amount);
+          balance = new Balance(transaction.UserId, transaction.AssetId, transaction.Amount);
           await _balanceRepository.AddAsync(balance);
         }
         else
