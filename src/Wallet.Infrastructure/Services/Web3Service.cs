@@ -16,6 +16,10 @@ using Nethereum.Util;
 using Wallet.Core.Entities;
 using Nethereum.RPC.TransactionManagers;
 using Wallet.Core.Specifications;
+using Nethereum.StandardTokenEIP20;
+using Nethereum.ABI.FunctionEncoding.Attributes;
+// using Nethereum.StandardTokenEIP20.Functions;
+using Nethereum.Contracts.CQS;
 
 namespace Wallet.Infrastructure.Services
 {
@@ -38,9 +42,11 @@ namespace Wallet.Infrastructure.Services
       _web3 = Web3Client();
     }
 
-    public async Task<decimal> GetBalanceAsync(string address)
+    public async Task<decimal> GetBalanceAsync(string address, string contractAddress)
     {
+      var tokenService = new StandardTokenService(_web3, contractAddress);
       var balanceWei = await _web3.Eth.GetBalance.SendRequestAsync(address);
+      // var balance = await tokenService.GetBalanceOfAsync<BigInteger>(address);
       return Web3.Convert.FromWei(balanceWei);
     }
 
@@ -70,7 +76,7 @@ namespace Wallet.Infrastructure.Services
 
         var spec = new AccountByIndexSpecification(accountIndex);
         var accountEntity = await _accountRepository.FirstOrDefaultAsync(spec);
-        var transaction = new Wallet.Core.Entities.Transaction(transactionType, transactionStatus, txHash, sender, recipient, amountEth, accountEntity.UserId);
+        var transaction = new Wallet.Core.Entities.Transaction(transactionType, transactionStatus, txHash, sender, recipient, amountEth, Guid.Empty, accountEntity.UserId);
         await _repository.AddAsync(transaction);
 
         return transaction;

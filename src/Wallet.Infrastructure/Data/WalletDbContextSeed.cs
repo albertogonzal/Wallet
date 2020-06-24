@@ -29,6 +29,14 @@ namespace Wallet.Infrastructure.Data
         }
       }
 
+      if (!context.Assets.Any())
+      {
+        var ethAsset = new Asset("ethereum", "eth", null, 18);
+        var weenusAsset = new Asset("weenus", "weenus", "0x101848d5c5bbca18e6b4431eedf6b95e9adf82fa", 18);
+        await context.Assets.AddRangeAsync(ethAsset, weenusAsset);
+        await context.SaveChangesAsync();
+      }
+
       if (!context.Balances.Any())
       {
         var balance = new Balance(new Guid(admin.Id), 0);

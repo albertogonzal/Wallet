@@ -32,7 +32,7 @@ namespace Wallet.Web.Controllers
     [HttpPost]
     public async Task<decimal> Balance(string address)
     {
-      return await _ethService.GetBalanceAsync(address);
+      return await _ethService.GetBalanceAsync(address, "");
     }
 
     [HttpPost]

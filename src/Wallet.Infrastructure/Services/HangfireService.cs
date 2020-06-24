@@ -14,13 +14,15 @@ namespace Wallet.Infrastructure.Services
     private readonly IEthereumService _ethService;
     private readonly IAsyncRepository<Account> _repository;
     private readonly IAsyncRepository<Transaction> _txRepository;
+    private readonly IAsyncRepository<Asset> _assetRepository;
     private readonly IOptions<TransactionOptions> _txOptions;
 
-    public HangfireService(IEthereumService ethService, IAsyncRepository<Account> repository, IAsyncRepository<Transaction> txRepository, IOptions<TransactionOptions> txOptions)
+    public HangfireService(IEthereumService ethService, IAsyncRepository<Account> repository, IAsyncRepository<Transaction> txRepository, IAsyncRepository<Asset> assetRepository, IOptions<TransactionOptions> txOptions)
     {
       _ethService = ethService;
       _repository = repository;
       _txRepository = txRepository;
+      _assetRepository = assetRepository;
       _txOptions = txOptions;
     }
 
@@ -32,23 +34,28 @@ namespace Wallet.Infrastructure.Services
       var accounts = allAccounts.Where(a => a.AccountIndex != 0).ToList();
       var adminAddress = allAccounts.Where(a => a.AccountIndex == 0).Single().Addresses.First().PublicAddress;
 
+      var assets = await _assetRepository.ListAsync();
+
       foreach (var account in accounts)
       {
         foreach (var address in account.Addresses)
         {
-          decimal balanceEth = await _ethService.GetBalanceAsync(address.PublicAddress);
-          if (balanceEth > _txOptions.Value.MinimumDeposit)
+          foreach (var asset in assets)
           {
-            int accountIndex = account.AccountIndex;
-            int addressIndex = address.AddressIndex;
+            decimal balance = await _ethService.GetBalanceAsync(address.PublicAddress, asset.ContractAddress);
+            if (balance > _txOptions.Value.MinimumDeposit)
+            {
+              int accountIndex = account.AccountIndex;
+              int addressIndex = address.AddressIndex;
 
-            var transaction = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balanceEth);
-            txHashes.Add(transaction.TransactionHash);
-          }
+              var transaction = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balance);
+              txHashes.Add(transaction.TransactionHash);
+            }
 
-          if (balanceEth > 0m)
-          {
-            txHashes.Add($"Not enough balance: {address.PublicAddress} : {balanceEth}");
+            if (balance > 0m)
+            {
+              txHashes.Add($"Not enough balance: {address.PublicAddress} : {balance}");
+            }
           }
         }
       }

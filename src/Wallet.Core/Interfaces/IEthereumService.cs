@@ -5,7 +5,7 @@ namespace Wallet.Core.Interfaces
 {
   public interface IEthereumService
   {
-    Task<decimal> GetBalanceAsync(string address);
+    Task<decimal> GetBalanceAsync(string address, string contractAddress);
     Task<Transaction> CreateTransactionAsync(int accountIndex, int addressIndex, string recipient, decimal amountEth);
     Task VerifyTransactionAsync(Transaction transaction);
     string GetEthAddress(int accountIndex, int addressIndex);

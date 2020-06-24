@@ -8,7 +8,7 @@ namespace Wallet.Core.Entities
     private string _type;
     private string _status;
 
-    public Transaction(string type, string status, string transactionHash, string sender, string recipient, decimal amount, Guid userId)
+    public Transaction(string type, string status, string transactionHash, string sender, string recipient, decimal amount, Guid assetId, Guid userId)
     {
       _type = type;
       _status = status;
@@ -16,6 +16,7 @@ namespace Wallet.Core.Entities
       Sender = sender;
       Recipient = recipient;
       Amount = amount;
+      AssetId = assetId;
       UserId = userId;
     }
 
@@ -25,6 +26,7 @@ namespace Wallet.Core.Entities
     public string Sender { get; private set; }
     public string Recipient { get; private set; }
     public decimal Amount { get; private set; }
+    public Guid AssetId { get; private set; }
     public Guid UserId { get; private set; }
 
     public void UpdateStatus(TransactionStatus status)
