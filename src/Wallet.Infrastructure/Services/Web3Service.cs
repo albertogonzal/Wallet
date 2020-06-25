@@ -20,6 +20,7 @@ using Nethereum.StandardTokenEIP20;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 using Nethereum.Contracts.CQS;
 using Nethereum.StandardTokenEIP20.ContractDefinition;
+using Nethereum.Signer.Crypto;
 
 namespace Wallet.Infrastructure.Services
 {
@@ -79,19 +80,18 @@ namespace Wallet.Infrastructure.Services
         }
         else
         {
-          var transactionMessage = new TransferFunction
-          {
-            FromAddress = sender,
-            To = recipient,
-            AmountToSend = amountToSendWei,
-            Gas = gas,
-            GasPrice = gasPriceWei
-          };
+          // var nonce = await txWeb3.Eth.Transactions.GetTransactionCount.SendRequestAsync(sender);
+          // var transfer = new TransferFunction()
+          // {
+          //   To = recipient,
+          //   Value = Web3.Convert.ToWei(1),
+          //   Nonce = nonce.Value
+          // };
 
-          // txHash = await txWeb3.Eth.GetContractTransactionHandler<TransferFunction>().SendRequestAsync(contractAddress, transactionMessage);
-          txHash = (await txWeb3.Eth.GetContractTransactionHandler<TransferFunction>().SendRequestAndWaitForReceiptAsync(contractAddress, transactionMessage)).TransactionHash;
+          // var signedMessage = await txWeb3.Eth.GetContractHandler(asset.ContractAddress).SignTransactionAsync(transfer);
+          // txHash = await _web3.Eth.Transactions.SendRawTransaction.SendRequestAsync("0x" + signedMessage);
+          return null;
         }
-
 
         var transactionType = accountIndex == 0 && addressIndex == 0
           ? TransactionType.FromName<TransactionType>("withdraw").Name
@@ -115,29 +115,36 @@ namespace Wallet.Infrastructure.Services
 
     public async Task VerifyTransactionAsync(Wallet.Core.Entities.Transaction transaction)
     {
-      Web3 txWeb3 = Web3Client();
-
-      var liveTransaction = await txWeb3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(transaction.TransactionHash);
-      var block = await txWeb3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-      var confirmations = block.Value - liveTransaction.BlockNumber.Value;
-
-      if (confirmations > 12)
+      try
       {
-        transaction.UpdateStatus(TransactionStatus.FromName<TransactionStatus>("completed"));
-        await _repository.UpdateAsync(transaction);
+        Web3 txWeb3 = Web3Client();
 
-        var spec = new BalanceByUserIdSpecification(transaction.UserId);
-        var balance = await _balanceRepository.FirstOrDefaultAsync(spec);
-        if (balance == null)
+        var liveTransaction = await txWeb3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(transaction.TransactionHash);
+        var block = await txWeb3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+        var confirmations = block.Value - liveTransaction.BlockNumber.Value;
+
+        if (confirmations > 12)
         {
-          balance = new Balance(transaction.UserId, transaction.AssetId, transaction.Amount);
-          await _balanceRepository.AddAsync(balance);
+          transaction.UpdateStatus(TransactionStatus.FromName<TransactionStatus>("completed"));
+          await _repository.UpdateAsync(transaction);
+
+          var spec = new BalanceByUserIdSpecification(transaction.UserId);
+          var balance = await _balanceRepository.FirstOrDefaultAsync(spec);
+          if (balance == null)
+          {
+            balance = new Balance(transaction.UserId, transaction.AssetId, transaction.Amount);
+            await _balanceRepository.AddAsync(balance);
+          }
+          else
+          {
+            balance.Deposit(transaction.Amount);
+            await _balanceRepository.UpdateAsync(balance);
+          }
         }
-        else
-        {
-          balance.Deposit(transaction.Amount);
-          await _balanceRepository.UpdateAsync(balance);
-        }
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine(ex.Message);
       }
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,7 +50,15 @@ namespace Wallet.Infrastructure.Services
               int addressIndex = address.AddressIndex;
 
               var transaction = await _ethService.CreateTransactionAsync(accountIndex, addressIndex, adminAddress, balance, asset);
-              txHashes.Add(transaction.TransactionHash);
+
+              if (transaction != null)
+              {
+                txHashes.Add(transaction.TransactionHash);
+              }
+              else
+              {
+                txHashes.Add($"{asset.Name} {address.PublicAddress} {balance}");
+              }
             }
 
             if (balance > 0m)
